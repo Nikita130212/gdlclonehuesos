@@ -3,189 +3,324 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Demonlist Clone</title>
+    <title>Global Demonlist Elite 15</title>
     <style>
-        /* Полностью автономные стили без внешних библиотек */
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            background-color: #0b0d12;
-            color: #e2e8f0;
-            font-family: system-ui, -apple-system, sans-serif;
-            margin: 0;
-            padding: 0 0 3rem 0;
-        }
-        header {
-            background-color: #141822;
-            border-bottom: 2px solid #1f2736;
-            padding: 1.5rem 1rem;
-            text-align: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-        }
-        h1 {
-            margin: 0;
-            font-size: 2rem;
-            font-weight: 900;
-            letter-spacing: 0.05em;
-            background: linear-gradient(90deg, #ff4141, #ffaa00);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-family: monospace;
-        }
-        header p {
-            margin: 0.4rem 0 0 0;
-            font-size: 0.75rem;
-            color: #8492a6;
-            text-transform: uppercase;
-            letter-spacing: 0.2em;
-        }
-        main {
-            max-width: 750px;
-            margin: 2rem auto 0 auto;
-            padding: 0 1rem;
-        }
-        #demon-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-        .demon-card {
-            background-color: #141822;
-            border: 1px solid #1f2736;
-            border-radius: 0.6rem;
-            padding: 1.1rem 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: transform 0.15s ease, border-color 0.15s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        .demon-card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(255, 65, 65, 0.4);
-        }
-        .left-side {
-            display: flex;
-            align-items: center;
-            gap: 1.2rem;
-        }
-        .position {
-            font-size: 1.35rem;
-            font-weight: 900;
-            font-family: monospace;
-            width: 45px;
-            text-align: center;
-            color: #4a5568;
-        }
-        .top-three {
-            color: #ffaa00;
-            font-size: 1.6rem;
-            text-shadow: 0 0 10px rgba(255, 170, 0, 0.2);
-        }
-        .info-block {
-            display: flex;
-            flex-direction: column;
-        }
-        .title {
-            margin: 0;
-            font-size: 1.15rem;
-            font-weight: 800;
-            color: #ffffff;
-            letter-spacing: 0.02em;
-        }
-        .author {
-            margin: 0.25rem 0 0 0;
-            font-size: 0.8rem;
-            color: #8492a6;
-        }
-        .author span {
-            color: #cbd5e1;
-            font-weight: 500;
-        }
-        .right-side {
-            display: flex;
-            align-items: center;
-        }
-        .score-badge {
-            font-family: monospace;
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: #f87171;
-            background-color: rgba(220, 38, 38, 0.15);
-            padding: 0.35rem 0.75rem;
-            border-radius: 0.35rem;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
+        * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: #080a0f; color: #e2e8f0; margin: 0; padding-bottom: 5rem; }
+        header { background-color: #10141f; border-bottom: 2px solid #1a2233; padding: 1.2rem; text-align: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
+        h1 { margin: 0; font-size: 1.8rem; font-weight: 900; background: linear-gradient(90deg, #ff3333, #ff9900); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-family: monospace; letter-spacing: 2px; }
+        .nav-tabs { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1rem; background: #0b0d13; padding: 0.4rem; border-radius: 0.5rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .tab-btn { background: transparent; border: none; color: #718096; padding: 0.5rem 1rem; font-weight: 700; font-size: 0.85rem; cursor: pointer; border-radius: 0.35rem; transition: 0.2s; text-transform: uppercase; }
+        .tab-btn.active { background: #1a2233; color: #ff9900; box-shadow: 0 2px 6px rgba(0,0,0,0.3); }
+        main { max-width: 800px; margin: 2rem auto 0 auto; padding: 0 1rem; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .card-list { display: flex; flex-direction: column; gap: 0.6rem; }
+        .item-card { background-color: #10141f; border: 1px solid #1a2233; border-radius: 0.5rem; padding: 1rem; display: flex; align-items: center; justify-content: space-between; transition: 0.2s; }
+        .item-card:hover { border-color: rgba(255,153,0,0.3); }
+        .rank-num { font-family: monospace; font-size: 1.3rem; font-weight: 900; width: 45px; text-align: center; color: #4a5568; }
+        .rank-top3 { color: #ff9900; text-shadow: 0 0 10px rgba(255,153,0,0.2); }
+        .badge { font-family: monospace; font-size: 0.85rem; font-weight: 700; background: rgba(255,51,51,0.1); border: 1px solid rgba(255,51,51,0.2); color: #f87171; padding: 0.3rem 0.6rem; border-radius: 0.3rem; }
+        .badge-alt { background: rgba(0,200,100,0.1); border: 1px solid rgba(0,200,100,0.2); color: #4ade80; }
+        .panel { background: #10141f; border: 1px solid #1a2233; border-radius: 0.6rem; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .panel-title { margin-top: 0; font-size: 1.2rem; color: #fff; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; }
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; font-size: 0.8rem; color: #a0aec0; margin-bottom: 0.4rem; text-transform: uppercase; font-weight: 700; }
+        input, select { width: 100%; background: #0b0d13; border: 1px solid #1a2233; padding: 0.7rem; border-radius: 0.4rem; color: #fff; font-size: 0.9rem; }
+        input:focus, select:focus { border-color: #ff9900; outline: none; }
+        .btn { background: linear-gradient(90deg, #ff3333, #ff9900); border: none; color: #fff; padding: 0.7rem 1.2rem; font-weight: 700; border-radius: 0.4rem; cursor: pointer; width: 100%; transition: opacity 0.2s; text-transform: uppercase; font-size: 0.85rem; }
+        .btn:hover { opacity: 0.9; }
+        .btn-sec { background: #1a2233; border: 1px solid #2d3748; color: #e2e8f0; }
+        .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.75rem; width: auto; }
+        .flex-actions { display: flex; gap: 0.5rem; }
+        .user-welcome { display: flex; justify-content: space-between; align-items: center; background: #1a2233; padding: 0.8rem 1.2rem; border-radius: 0.4rem; margin-bottom: 1rem; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
     <header>
         <h1>GLOBAL DEMONLIST</h1>
-        <p>Топ актуальных сложнейших демонов</p>
+        <div class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('demons-sect', this)">Демоны (15)</button>
+            <button class="tab-btn" onclick="switchTab('players-sect', this)">Топ Игроков</button>
+            <button class="tab-btn" onclick="switchTab('countries-sect', this)">Топ Стран</button>
+            <button class="tab-btn" onclick="switchTab('account-sect', this)">Профиль / Админ</button>
+        </div>
     </header>
 
     <main>
-        <div id="demon-list"></div>
+        <section id="demons-sect" class="section active">
+            <div id="admin-arrange-hint" class="panel" style="display:none; border-color: #ff9900; background: rgba(255,153,0,0.02)">
+                <h4 style="margin:0 0 0.5rem 0; color:#ff9900;">Режим Управления Позициями</h4>
+                <p style="margin:0; font-size:0.85rem; color:#a0aec0;">Админ-панель активна. Используйте кнопки ▲/▼ на карточках уровней.</p>
+            </div>
+            <div id="demon-list" class="card-list"></div>
+        </section>
+
+        <section id="players-sect" class="section">
+            <div id="player-list" class="card-list"></div>
+        </section>
+
+        <section id="countries-sect" class="section">
+            <div id="country-list" class="card-list"></div>
+        </section>
+
+        <section id="account-sect" class="section">
+            <div id="guest-block" class="panel">
+                <div class="panel-title">Авторизация системы</div>
+                <div class="form-group">
+                    <label>Имя пользователя</label>
+                    <input type="text" id="auth-username" placeholder="Введите никнейм...">
+                </div>
+                <div class="form-group">
+                    <label>Страна</label>
+                    <select id="auth-country">
+                        <option value="Россия">Россия</option>
+                        <option value="США">США</option>
+                        <option value="Германия">Германия</option>
+                        <option value="Южная Корея">Южная Корея</option>
+                        <option value="Япония">Япония</option>
+                        <option value="Франция">Франция</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <button class="btn" onclick="handleAuth(false)">Войти / Создать аккаунт</button>
+                </div>
+                <button class="btn btn-sec" style="margin-top:0.5rem;" onclick="handleAuth(true)">Войти как Admin</button>
+            </div>
+
+            <div id="user-block" class="panel" style="display: none;">
+                <div class="user-welcome">
+                    <div>Статус: <strong id="display-status" style="color:#ff9900;">Игрок</strong> (<span id="display-username"></span>)</div>
+                    <button class="btn btn-sec btn-sm" onclick="logout()">Выйти</button>
+                </div>
+
+                <div style="border-top: 1px solid #1a2233; padding-top: 1.5rem; margin-top: 1.5rem;">
+                    <div class="panel-title">Создать и привязать уровень</div>
+                    <div class="form-group">
+                        <label>Название уровня</label>
+                        <input type="text" id="new-demon-name" placeholder="Например: Eternal Silence">
+                    </div>
+                    <div class="form-group">
+                        <label>Создатель / Верификатор</label>
+                        <input type="text" id="new-demon-creator" placeholder="Например: Nikitamod">
+                    </div>
+                    <button class="btn" onclick="addNewDemon()">Добавить в общий топ</button>
+                </div>
+            </div>
+        </section>
     </main>
 
     <script>
-        // Полностью автономная локальная база данных топ-уровней Demonlist
-        const DEMONS_DATA = [
-            { position: 1, name: "Society", publisher: "Neomarbilan", score: 100.00 },
-            { position: 2, name: "Thinking Space II", publisher: "CairoX", score: 95.50 },
-            { position: 3, name: "Flamewall", publisher: "Narwall", score: 91.20 },
-            { position: 4, name: "Amethyst", publisher: "iMist", score: 87.10 },
-            { position: 5, name: "Tidal Wave", publisher: "OniLink", score: 83.40 },
-            { position: 6, name: "ORBIT", publisher: "MindCap", score: 80.00 },
-            { position: 7, name: "Nullscapes", publisher: "Kiba", score: 76.85 },
-            { position: 8, name: "Quanteuse", publisher: "Renn241", score: 74.00 },
-            { position: 9, name: "BOOBAWAMBA", publisher: "Akunakunn", score: 71.30 },
-            { position: 10, name: "Every End", publisher: "MindCap", score: 68.90 },
-            { position: 11, name: "Penumbral", publisher: "cherryteam", score: 66.40 },
-            { position: 12, name: "Silent Clubstep", publisher: "TheRealSailent", score: 64.10 },
-            { position: 13, name: "Ashley Wave Trials", publisher: "oddmod", score: 62.00 },
-            { position: 14, name: "Acheron", publisher: "Riot", score: 60.15 },
-            { position: 15, name: "Avernus", publisher: "Porsalin", score: 58.40 },
-            { position: 16, name: "Kyouki", publisher: "ViperElite", score: 56.80 },
-            { position: 17, name: "Slaughterhouse", publisher: "IcedCave", score: 55.20 },
-            { position: 18, name: "Sakupen Circles", publisher: "TrusTa", score: 53.70 },
-            { position: 19, name: "Firework", publisher: "Trick", score: 52.30 },
-            { position: 20, name: "Zodiac", publisher: "Bianox", score: 51.00 }
+        const DB_VERSION = "v9_top_15_monolith";
+
+        const ORIGINAL_TOP15 = [
+            { name: "Society", publisher: "Neomarbilan" },
+            { name: "Thinking Space II", publisher: "CairoX" },
+            { name: "Amethyst", publisher: "iMist" },
+            { name: "Flamewall", publisher: "UNarwall" },
+            { name: "Tidal Wave", publisher: "OniLinkGD" },
+            { name: "ORBIT", publisher: "MindCap" },
+            { name: "KOCMOC UNLEASHED", publisher: "Cherryteam" },
+            { name: "Quanteuse processing", publisher: "Renn241" },
+            { name: "Nullscapes", publisher: "ItzKiba" },
+            { name: "The Bloop", publisher: "Murrkat" },
+            { name: "BOOBAWAMBA", publisher: "Akunakunn" },
+            { name: "Orochi", publisher: "Platnuu" },
+            { name: "Sakupen circles", publisher: "Nick24" },
+            { name: "Silent clubstep", publisher: "TheRealSailent" },
+            { name: "Lesopowal", publisher: "cherryteam" }
         ];
 
-        function renderInterface() {
+        if (localStorage.getItem('gdl_db_version') !== DB_VERSION) {
+            localStorage.clear();
+            localStorage.setItem('gdl_db_version', DB_VERSION);
+        }
+
+        let state = {
+            demons: JSON.parse(localStorage.getItem('gdl_demons')) || [],
+            players: JSON.parse(localStorage.getItem('gdl_players')) || [
+                { name: "wPopoff", score: 250.00, country: "Россия" },
+                { name: "Zoink", score: 210.50, country: "США" },
+                { name: "Arshadow", score: 95.20, country: "Россия" }
+            ],
+            currentUser: JSON.parse(localStorage.getItem('gdl_session')) || null
+        };
+
+        function calculateScoreForPosition(pos) {
+            if (pos > 15) return 0;
+            return parseFloat((250 * Math.exp(((pos - 1) * Math.log(1 / 250)) / 14)).toFixed(2));
+        }
+
+        function recalculatePlayerScores() {
+            state.players.forEach(p => {
+                if (p.name !== "wPopoff" && p.name !== "Zoink" && p.name !== "Arshadow") p.score = 0;
+            });
+            state.demons.forEach(d => {
+                if (d.accountOwner !== 'System') {
+                    const owner = state.players.find(p => p.name === d.accountOwner);
+                    if (owner) owner.score += calculateScoreForPosition(d.position);
+                }
+            });
+        }
+
+        if (state.demons.length === 0) {
+            state.demons = ORIGINAL_TOP15.map((d, index) => ({
+                id: Math.random().toString(36).substring(2, 9),
+                position: index + 1,
+                name: d.name,
+                publisher: d.publisher,
+                accountOwner: 'System'
+            }));
+            saveToStorage();
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('gdl_demons', JSON.stringify(state.demons));
+            localStorage.setItem('gdl_players', JSON.stringify(state.players));
+            localStorage.setItem('gdl_session', JSON.stringify(state.currentUser));
+        }
+
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            element.classList.add('active');
+            renderAll();
+        }
+
+        function handleAuth(isAdminMode) {
+            if (isAdminMode) {
+                state.currentUser = { name: "Администратор", country: "System", role: "admin" };
+            } else {
+                const userField = document.getElementById('auth-username').value.trim();
+                const countryField = document.getElementById('auth-country').value;
+                if (!userField) return alert("Введите имя пользователя!");
+                state.currentUser = { name: userField, country: countryField, role: "player" };
+                if (!state.players.some(p => p.name.toLowerCase() === userField.toLowerCase())) {
+                    state.players.push({ name: userField, score: 0, country: countryField });
+                }
+            }
+            saveToStorage();
+            updateSessionUI();
+            renderAll();
+        }
+
+        function logout() {
+            state.currentUser = null;
+            saveToStorage();
+            updateSessionUI();
+            renderAll();
+        }
+
+        function updateSessionUI() {
+            const guestBlock = document.getElementById('guest-block');
+            const userBlock = document.getElementById('user-block');
+            const adminHint = document.getElementById('admin-arrange-hint');
+            if (state.currentUser) {
+                guestBlock.style.display = 'none';
+                userBlock.style.display = 'block';
+                document.getElementById('display-username').textContent = state.currentUser.name;
+                document.getElementById('display-status').textContent = state.currentUser.role === 'admin' ? 'Администратор' : 'Игрок';
+                adminHint.style.display = state.currentUser.role === 'admin' ? 'block' : 'none';
+            } else {
+                guestBlock.style.display = 'block';
+                userBlock.style.display = 'none';
+                adminHint.style.display = 'none';
+            }
+        }
+
+        function moveItem(index, direction) {
+            if (!state.currentUser || state.currentUser.role !== 'admin') return;
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= state.demons.length) return;
+            const temp = state.demons[index];
+            state.demons[index] = state.demons[targetIndex];
+            state.demons[targetIndex] = temp;
+            state.demons.forEach((d, idx) => d.position = idx + 1);
+            recalculatePlayerScores();
+            saveToStorage();
+            renderDemons();
+        }
+
+        function addNewDemon() {
+            if (!state.currentUser) return alert("Пройдите авторизацию!");
+            const name = document.getElementById('new-demon-name').value.trim();
+            const creator = document.getElementById('new-demon-creator').value.trim();
+            if (!name || !creator) return alert("Заполните поля формы!");
+            state.demons.push({
+                id: Math.random().toString(36).substring(2, 9),
+                position: state.demons.length + 1,
+                name: name,
+                publisher: creator,
+                accountOwner: state.currentUser.name
+            });
+            recalculatePlayerScores();
+            saveToStorage();
+            document.getElementById('new-demon-name').value = '';
+            document.getElementById('new-demon-creator').value = '';
+            alert('Уровень успешно добавлен и закреплен за вашим аккаунтом!');
+            renderAll();
+        }
+
+        function renderDemons() {
             const container = document.getElementById('demon-list');
-            container.innerHTML = ''; 
-
-            DEMONS_DATA.forEach(item => {
+            container.innerHTML = '';
+            const isAdmin = state.currentUser && state.currentUser.role === 'admin';
+            state.demons.forEach((demon, idx) => {
                 const card = document.createElement('div');
-                card.className = "demon-card";
-
-                const isPremiumRank = item.position <= 3;
-                const formattedScore = item.score.toFixed(2);
-
-                card.innerHTML = `
-                    <div class="left-side">
-                        <span class="position ${isPremiumRank ? 'top-three' : ''}">#${item.position}</span>
-                        <div class="info-block">
-                            <h2 class="title">${item.name}</h2>
-                            <p class="author">Создатель: <span>${item.publisher}</span></p>
-                        </div>
-                    </div>
-                    <div class="right-side">
-                        <span class="score-badge">${formattedScore} ★</span>
-                    </div>
-                `;
+                card.className = "item-card";
+                const isTop3 = demon.position <= 3;
+                const dynamicScore = calculateScoreForPosition(demon.position);
+                let adminControls = '';
+                if (isAdmin) {
+                    adminControls = `<div class="flex-actions" style="margin-left: 1rem;"> <button class="btn btn-sec btn-sm" onclick="moveItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''}>▲</button> <button class="btn btn-sec btn-sm" onclick="moveItem(${idx}, 1)" ${idx === state.demons.length - 1 ? 'disabled' : ''}>▼</button> </div>`;
+                }
+                card.innerHTML = `<div style="display:flex; align-items:center; flex-grow:1;"> <span class="rank-num ${isTop3 ? 'rank-top3' : ''}">#${demon.position}</span> <div> <strong style="font-size:1.1rem; color:#fff;">${demon.name}</strong> <div style="font-size:0.75rem; color:#8492a6; margin-top:0.2rem;"> Создатель: <span style="color:#cbd5e1;">${demon.publisher}</span>  ${demon.accountOwner !== 'System' ? '| Владелец: ' + demon.accountOwner : ''} </div> </div> </div> <div style="display:flex; align-items:center;"> <span class="badge">${dynamicScore > 0 ? dynamicScore.toFixed(2) : '0.00'} ★</span> ${adminControls} </div>`;
                 container.appendChild(card);
             });
         }
 
-        window.addEventListener('DOMContentLoaded', renderInterface);
+        function renderPlayers() {
+            const container = document.getElementById('player-list');
+            container.innerHTML = '';
+            const sortedPlayers = [...state.players].sort((a, b) => b.score - a.score);
+            sortedPlayers.forEach((player, idx) => {
+                const card = document.createElement('div');
+                card.className = "item-card";
+                card.innerHTML = `<div style="display:flex; align-items:center;"> <span class="rank-num ${idx < 3 ? 'rank-top3' : ''}">#${idx + 1}</span> <div> <strong style="color:#fff;">${player.name}</strong> <div style="font-size:0.75rem; color:#8492a6; margin-top:0.2rem;">Регион: ${player.country}</div> </div> </div> <span class="badge badge-alt">${player.score.toFixed(2)} PTS</span>`;
+                container.appendChild(card);
+            });
+        }
+
+        function renderCountries() {
+            const container = document.getElementById('country-list');
+            container.innerHTML = '';
+            const countryMap = {};
+            state.players.forEach(p => {
+                if (p.country === "System") return;
+                if (!countryMap[p.country]) countryMap[p.country] = 0;
+                countryMap[p.country] += p.score;
+            });
+            const sortedCountries = Object.keys(countryMap).map(c => ({ name: c, score: countryMap[c] })).sort((a, b) => b.score - a.score);
+            sortedCountries.forEach((country, idx) => {
+                const card = document.createElement('div');
+                card.className = "item-card";
+                card.innerHTML = `<div style="display:flex; align-items:center;"> <span class="rank-num ${idx < 3 ? 'rank-top3' : ''}">#${idx + 1}</span> <strong style="color:#fff;">${country.name}</strong> </div> <span class="badge badge-alt" style="background:rgba(51,153,255,0.1); border-color:rgba(51,153,255,0.2); color:#60a5fa;">${country.score.toFixed(2)} Total</span>`;
+                container.appendChild(card);
+            });
+        }
+
+        function renderAll() {
+            renderDemons();
+            renderPlayers();
+            renderCountries();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateSessionUI();
+            renderAll();
+        });
     </script>
 </body>
 </html>
