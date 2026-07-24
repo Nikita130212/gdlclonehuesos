@@ -34,6 +34,11 @@
         .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.75rem; width: auto; }
         .flex-actions { display: flex; gap: 0.5rem; }
         .user-welcome { display: flex; justify-content: space-between; align-items: center; background: #1a2233; padding: 0.8rem 1.2rem; border-radius: 0.4rem; margin-bottom: 1rem; font-size: 0.9rem; }
+        .my-levels { margin-top: 1.5rem; border-top: 1px solid #1a2233; padding-top: 1rem; }
+        .level-owner-tag { font-size: 0.7rem; color: #ff9900; background: rgba(255,153,0,0.1); padding: 0.1rem 0.5rem; border-radius: 0.3rem; margin-left: 0.5rem; }
+        .select-wrapper { display: flex; gap: 0.5rem; align-items: center; }
+        .select-wrapper select { flex: 1; }
+        .btn-smaller { padding: 0.3rem 0.8rem; font-size: 0.75rem; width: auto; white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -107,6 +112,17 @@
                     </div>
                     <button class="btn" onclick="addNewDemon()">Добавить в общий топ</button>
                 </div>
+
+                <div class="my-levels" id="my-levels-section">
+                    <div class="panel-title" style="font-size:1rem; margin-bottom:0.5rem;">📌 Мои уровни</div>
+                    <div id="user-levels-list" style="display:flex; flex-direction:column; gap:0.4rem;"></div>
+                    <div style="margin-top:0.8rem; display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                        <span style="font-size:0.8rem; color:#a0aec0;">Передать уровень другому игроку:</span>
+                        <select id="transfer-level-select" style="flex:1; min-width:120px; background:#0b0d13; border:1px solid #1a2233; padding:0.4rem; border-radius:0.3rem; color:#fff;"></select>
+                        <input type="text" id="transfer-target" placeholder="Никнейм" style="flex:1; min-width:100px; background:#0b0d13; border:1px solid #1a2233; padding:0.4rem; border-radius:0.3rem; color:#fff;">
+                        <button class="btn btn-sec btn-smaller" onclick="transferLevel()">Передать</button>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
@@ -157,7 +173,7 @@
                 if (p.name !== "wPopoff" && p.name !== "Zoink" && p.name !== "Arshadow") p.score = 0;
             });
             state.demons.forEach(d => {
-                if (d.accountOwner !== 'System') {
+                if (d.accountOwner && d.accountOwner !== 'System') {
                     const owner = state.players.find(p => p.name === d.accountOwner);
                     if (owner) owner.score += calculateScoreForPosition(d.position);
                 }
@@ -223,11 +239,59 @@
                 document.getElementById('display-username').textContent = state.currentUser.name;
                 document.getElementById('display-status').textContent = state.currentUser.role === 'admin' ? 'Администратор' : 'Игрок';
                 adminHint.style.display = state.currentUser.role === 'admin' ? 'block' : 'none';
+                renderUserLevels();
             } else {
                 guestBlock.style.display = 'block';
                 userBlock.style.display = 'none';
                 adminHint.style.display = 'none';
             }
+        }
+
+        function renderUserLevels() {
+            const container = document.getElementById('user-levels-list');
+            const select = document.getElementById('transfer-level-select');
+            if (!state.currentUser) return;
+            const myLevels = state.demons.filter(d => d.accountOwner === state.currentUser.name);
+            
+            if (myLevels.length === 0) {
+                container.innerHTML = '<div style="color:#718096; font-size:0.85rem;">У вас пока нет добавленных уровней.</div>';
+                select.innerHTML = '<option value="">Нет уровней</option>';
+                return;
+            }
+
+            container.innerHTML = myLevels.map(d => 
+                `<div style="display:flex; justify-content:space-between; align-items:center; background:#0b0d13; padding:0.4rem 0.8rem; border-radius:0.3rem; border-left:2px solid #ff9900;">
+                    <span><strong style="color:#fff;">${d.name}</strong> <span style="color:#8492a6; font-size:0.8rem;">#${d.position}</span></span>
+                    <span style="color:#8492a6; font-size:0.75rem;">${d.publisher}</span>
+                </div>
+            ).join('');
+
+            select.innerHTML = myLevels.map(d => 
+                `<option value="${d.id}">${d.name} (#${d.position})</option>`
+            ).join('');
+        }
+
+        function transferLevel() {
+            if (!state.currentUser) return alert("Авторизуйтесь!");
+            const levelId = document.getElementById('transfer-level-select').value;
+            const targetName = document.getElementById('transfer-target').value.trim();
+            if (!levelId) return alert("Выберите уровень для передачи.");
+            if (!targetName) return alert("Введите никнейм получателя.");
+            
+            const level = state.demons.find(d => d.id === levelId);
+            if (!level) return alert("Уровень не найден.");
+            if (level.accountOwner !== state.currentUser.name) return alert("Это не ваш уровень!");
+            
+            const targetPlayer = state.players.find(p => p.name.toLowerCase() === targetName.toLowerCase());
+            if (!targetPlayer) return alert("Игрок с таким ником не найден. Сначала он должен создать аккаунт.");
+            
+            level.accountOwner = targetPlayer.name;
+            recalculatePlayerScores();
+            saveToStorage();
+            renderAll();
+            renderUserLevels();
+            document.getElementById('transfer-target').value = '';
+            alert(`Уровень "${level.name}" передан игроку ${targetPlayer.name}!`);
         }
 
         function moveItem(index, direction) {
@@ -241,6 +305,7 @@
             recalculatePlayerScores();
             saveToStorage();
             renderDemons();
+            renderUserLevels();
         }
 
         function addNewDemon() {
@@ -248,6 +313,12 @@
             const name = document.getElementById('new-demon-name').value.trim();
             const creator = document.getElementById('new-demon-creator').value.trim();
             if (!name || !creator) return alert("Заполните поля формы!");
+            
+            // Проверка на дубликат названия
+            if (state.demons.some(d => d.name.toLowerCase() === name.toLowerCase())) {
+                return alert("Уровень с таким названием уже существует!");
+            }
+            
             state.demons.push({
                 id: Math.random().toString(36).substring(2, 9),
                 position: state.demons.length + 1,
@@ -261,6 +332,7 @@
             document.getElementById('new-demon-creator').value = '';
             alert('Уровень успешно добавлен и закреплен за вашим аккаунтом!');
             renderAll();
+            renderUserLevels();
         }
 
         function renderDemons() {
@@ -276,7 +348,22 @@
                 if (isAdmin) {
                     adminControls = `<div class="flex-actions" style="margin-left: 1rem;"> <button class="btn btn-sec btn-sm" onclick="moveItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''}>▲</button> <button class="btn btn-sec btn-sm" onclick="moveItem(${idx}, 1)" ${idx === state.demons.length - 1 ? 'disabled' : ''}>▼</button> </div>`;
                 }
-                card.innerHTML = `<div style="display:flex; align-items:center; flex-grow:1;"> <span class="rank-num ${isTop3 ? 'rank-top3' : ''}">#${demon.position}</span> <div> <strong style="font-size:1.1rem; color:#fff;">${demon.name}</strong> <div style="font-size:0.75rem; color:#8492a6; margin-top:0.2rem;"> Создатель: <span style="color:#cbd5e1;">${demon.publisher}</span>  ${demon.accountOwner !== 'System' ? '| Владелец: ' + demon.accountOwner : ''} </div> </div> </div> <div style="display:flex; align-items:center;"> <span class="badge">${dynamicScore > 0 ? dynamicScore.toFixed(2) : '0.00'} ★</span> ${adminControls} </div>`;
+                const ownerTag = demon.accountOwner && demon.accountOwner !== 'System' 
+                    ? `<span class="level-owner-tag">👤 ${demon.accountOwner}</span>` 
+                    : '';
+                card.innerHTML = `<div style="display:flex; align-items:center; flex-grow:1;"> 
+                    <span class="rank-num ${isTop3 ? 'rank-top3' : ''}">#${demon.position}</span> 
+                    <div> 
+                        <strong style="font-size:1.1rem; color:#fff;">${demon.name}</strong> 
+                        <div style="font-size:0.75rem; color:#8492a6; margin-top:0.2rem;"> 
+                            Создатель: <span style="color:#cbd5e1;">${demon.publisher}</span> ${ownerTag}
+                        </div> 
+                    </div> 
+                </div> 
+                <div style="display:flex; align-items:center;"> 
+                    <span class="badge">${dynamicScore > 0 ? dynamicScore.toFixed(2) : '0.00'} ★</span> 
+                    ${adminControls} 
+                </div>`;
                 container.appendChild(card);
             });
         }
@@ -288,7 +375,17 @@
             sortedPlayers.forEach((player, idx) => {
                 const card = document.createElement('div');
                 card.className = "item-card";
-                card.innerHTML = `<div style="display:flex; align-items:center;"> <span class="rank-num ${idx < 3 ? 'rank-top3' : ''}">#${idx + 1}</span> <div> <strong style="color:#fff;">${player.name}</strong> <div style="font-size:0.75rem; color:#8492a6; margin-top:0.2rem;">Регион: ${player.country}</div> </div> </div> <span class="badge badge-alt">${player.score.toFixed(2)} PTS</span>`;
+                const levelCount = state.demons.filter(d => d.accountOwner === player.name).length;
+                card.innerHTML = `<div style="display:flex; align-items:center;"> 
+                    <span class="rank-num ${idx < 3 ? 'rank-top3' : ''}">#${idx + 1}</span> 
+                    <div> 
+                        <strong style="color:#fff;">${player.name}</strong> 
+                        <div style="font-size:0.75rem; color:#8492a6; margin-top:0.2rem;">
+                            Регион: ${player.country} ${levelCount > 0 ? `| Уровней: ${levelCount}` : ''}
+                        </div> 
+                    </div> 
+                </div> 
+                <span class="badge badge-alt">${player.score.toFixed(2)} PTS</span>`;
                 container.appendChild(card);
             });
         }
@@ -306,7 +403,11 @@
             sortedCountries.forEach((country, idx) => {
                 const card = document.createElement('div');
                 card.className = "item-card";
-                card.innerHTML = `<div style="display:flex; align-items:center;"> <span class="rank-num ${idx < 3 ? 'rank-top3' : ''}">#${idx + 1}</span> <strong style="color:#fff;">${country.name}</strong> </div> <span class="badge badge-alt" style="background:rgba(51,153,255,0.1); border-color:rgba(51,153,255,0.2); color:#60a5fa;">${country.score.toFixed(2)} Total</span>`;
+                card.innerHTML = `<div style="display:flex; align-items:center;"> 
+                    <span class="rank-num ${idx < 3 ? 'rank-top3' : ''}">#${idx + 1}</span> 
+                    <strong style="color:#fff;">${country.name}</strong> 
+                </div> 
+                <span class="badge badge-alt" style="background:rgba(51,153,255,0.1); border-color:rgba(51,153,255,0.2); color:#60a5fa;">${country.score.toFixed(2)} Total</span>`;
                 container.appendChild(card);
             });
         }
@@ -315,6 +416,7 @@
             renderDemons();
             renderPlayers();
             renderCountries();
+            if (state.currentUser) renderUserLevels();
         }
 
         document.addEventListener('DOMContentLoaded', () => {
