@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Demonlist Clone</title>
+    <style>
+        /* Базовые стили и темная тема */
+        body {
+            background-color: #11141a;
+            color: #e2e8f0;
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding-bottom: 3rem;
+        }
+        header {
+            background-color: #181c25;
+            border-bottom: 1px solid #2d3748;
+            padding: 1.5rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            background: linear-gradient(to right, #ef4444, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        header p {
+            margin: 0.25rem 0 0 0;
+            font-size: 0.75rem;
+            color: #a0aec0;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+        main {
+            max-width: 800px;
+            margin: 2rem auto 0 auto;
+            padding: 0 1rem;
+        }
+        /* Состояния загрузки и ошибок */
+        #loader {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5rem 0;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #2d3748;
+            border-top: 3px solid #ef4444;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        #error-message {
+            display: none;
+            background-color: rgba(127, 29, 29, 0.4);
+            border: 1px solid #991b1b;
+            color: #fca5a5;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+        /* Стили карточек демонов */
+        .demon-card {
+            background-color: #181c25;
+            border: 1px solid rgba(45, 55, 72, 0.8);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: border-color 0.2s;
+        }
+        .demon-card:hover {
+            border-color: rgba(239, 68, 68, 0.4);
+        }
+        .left-part {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .position {
+            font-size: 1.25rem;
+            font-weight: 900;
+            font-family: monospace;
+            width: 40px;
+            text-align: center;
+            color: #718096;
+        }
+        .top-three {
+            color: #f59e0b;
+            font-size: 1.5rem;
+        }
+        .demon-title {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .demon-author {
+            margin: 0.2rem 0 0 0;
+            font-size: 0.75rem;
+            color: #a0aec0;
+        }
+        .demon-author span {
+            color: #e2e8f0;
+        }
+        .points-badge {
+            font-family: monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #f87171;
+            background-color: rgba(127, 29, 29, 0.2);
+            padding: 0.25rem 0.6rem;
+            border-radius: 0.25rem;
+            border: 1px solid rgba(153, 27, 27, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>GLOBAL DEMONLIST</h1>
+        <p>Топ 50 сложнейших демонов</p>
+    </header>
+
+    <main>
+        <div id="loader">
+            <div class="spinner"></div>
+            <div style="color: #a0aec0; font-size: 0.9rem;">Загрузка списка уровней...</div>
+        </div>
+
+        <div id="error-message">
+            Не удалось загрузить данные напрямую из-за ограничений CORS в браузере.<br>
+            <small style="color: #f87171; display:block; margin-top:0.5rem;">
+                Для работы локальных файлов откройте страницу через локальный сервер (например, Live Server в VS Code).
+            </small>
+        </div>
+
+        <div id="demon-list"></div>
+    </main>
+
+    <script>
+        // Использование резервного метода запроса без сторонних прокси
+        const API_URL = "https://demonlist.org";
+
+        async function fetchDemons() {
+            const loader = document.getElementById('loader');
+            const errorMessage = document.getElementById('error-message');
+            const container = document.getElementById('demon-list');
+
+            try {
+                // Прямой запрос к API
+                const response = await fetch(API_URL, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+                
+                if (!response.ok) throw new Error('Ошибка сети');
+
+                const data = await response.json();
+                
+                loader.style.display = 'none';
+                
+                // Отрисовка элементов
+                data.forEach(demon => {
+                    const card = document.createElement('div');
+                    card.className = "demon-card";
+
+                    const isTop3 = demon.position <= 3;
+                    const score = Number(demon.score).toFixed(2);
+
+                    card.innerHTML = `
+                        <div class="left-part">
+                            <span class="position ${isTop3 ? 'top-three' : ''}">#${demon.position}</span>
+                            <div>
+                                <h2 class="demon-title">${demon.name}</h2>
+                                <p class="demon-author">Создатель: <span>${demon.publisher.name}</span></p>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="points-badge">${score} ★</span>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error('Ошибка:', error);
+                loader.style.display = 'none';
+                errorMessage.style.display = 'block';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchDemons);
+    </script>
+</body>
+</html>
