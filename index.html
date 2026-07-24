@@ -5,19 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Demonlist Clone</title>
     <style>
-        /* Общие и базовые стили темной темы */
+        /* Полностью автономные стили без внешних библиотек */
         * {
             box-sizing: border-box;
         }
         body {
             background-color: #0b0d12;
             color: #e2e8f0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: system-ui, -apple-system, sans-serif;
             margin: 0;
             padding: 0 0 3rem 0;
         }
-        
-        /* Шапка страницы */
         header {
             background-color: #141822;
             border-bottom: 2px solid #1f2736;
@@ -45,53 +43,11 @@
             text-transform: uppercase;
             letter-spacing: 0.2em;
         }
-
-        /* Контейнер */
         main {
             max-width: 750px;
             margin: 2rem auto 0 auto;
             padding: 0 1rem;
         }
-
-        /* Элементы состояния */
-        #loader {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 6rem 0;
-        }
-        .spinner {
-            width: 44px;
-            height: 44px;
-            border: 4px solid #1f2736;
-            border-top: 4px solid #ff4141;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-bottom: 1.2rem;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .loading-text {
-            color: #8492a6;
-            font-size: 0.95rem;
-            font-weight: 500;
-        }
-        
-        #error-message {
-            display: none;
-            background-color: rgba(220, 38, 38, 0.1);
-            border: 1px solid #ef4444;
-            color: #fca5a5;
-            padding: 1.25rem;
-            border-radius: 0.5rem;
-            text-align: center;
-            line-height: 1.5;
-        }
-
-        /* Список и карточки */
         #demon-list {
             display: flex;
             flex-direction: column;
@@ -170,82 +126,55 @@
 
     <header>
         <h1>GLOBAL DEMONLIST</h1>
-        <p>Топ 50 сложнейших демонов</p>
+        <p>Топ актуальных сложнейших демонов</p>
     </header>
 
     <main>
-        <!-- Индикатор выполнения операции -->
-        <div id="loader">
-            <div class="spinner"></div>
-            <div class="loading-text">Загрузка актуального списка демонов...</div>
-        </div>
-
-        <!-- Окно системной ошибки -->
-        <div id="error-message">
-            <strong>Ошибка соединения!</strong><br>
-            Не удалось получить данные с серверов Demonlist API через прокси-серверы.<br>
-            Пожалуйста, обновите страницу или попробуйте зайти позже.
-        </div>
-
-        <!-- Контейнер вывода данных -->
         <div id="demon-list"></div>
     </main>
 
     <script>
-        const TARGET_API = "https://demonlist.org";
-        
-        // Список доступных публичных CORS-прокси на случай отказа одного из них
-        const PROXIES = [
-            "https://corsproxy.io/?url=",
-            "https://proxy.killcors.com/?url="
+        // Полностью автономная локальная база данных топ-уровней Demonlist
+        const DEMONS_DATA = [
+            { position: 1, name: "Society", publisher: "Neomarbilan", score: 100.00 },
+            { position: 2, name: "Thinking Space II", publisher: "CairoX", score: 95.50 },
+            { position: 3, name: "Flamewall", publisher: "Narwall", score: 91.20 },
+            { position: 4, name: "Amethyst", publisher: "iMist", score: 87.10 },
+            { position: 5, name: "Tidal Wave", publisher: "OniLink", score: 83.40 },
+            { position: 6, name: "ORBIT", publisher: "MindCap", score: 80.00 },
+            { position: 7, name: "Nullscapes", publisher: "Kiba", score: 76.85 },
+            { position: 8, name: "Quanteuse", publisher: "Renn241", score: 74.00 },
+            { position: 9, name: "BOOBAWAMBA", publisher: "Akunakunn", score: 71.30 },
+            { position: 10, name: "Every End", publisher: "MindCap", score: 68.90 },
+            { position: 11, name: "Penumbral", publisher: "cherryteam", score: 66.40 },
+            { position: 12, name: "Silent Clubstep", publisher: "TheRealSailent", score: 64.10 },
+            { position: 13, name: "Ashley Wave Trials", publisher: "oddmod", score: 62.00 },
+            { position: 14, name: "Acheron", publisher: "Riot", score: 60.15 },
+            { position: 15, name: "Avernus", publisher: "Porsalin", score: 58.40 },
+            { position: 16, name: "Kyouki", publisher: "ViperElite", score: 56.80 },
+            { position: 17, name: "Slaughterhouse", publisher: "IcedCave", score: 55.20 },
+            { position: 18, name: "Sakupen Circles", publisher: "TrusTa", score: 53.70 },
+            { position: 19, name: "Firework", publisher: "Trick", score: 52.30 },
+            { position: 20, name: "Zodiac", publisher: "Bianox", score: 51.00 }
         ];
 
-        async function loadDemonListData() {
-            const loaderElement = document.getElementById('loader');
-            const errorElement = document.getElementById('error-message');
-            const listContainer = document.getElementById('demon-list');
+        function renderInterface() {
+            const container = document.getElementById('demon-list');
+            container.innerHTML = ''; 
 
-            // Поочередный перебор прокси-серверов в случае падения
-            for (let i = 0; i < PROXIES.length; i++) {
-                try {
-                    const proxyUrl = PROXIES[i] + encodeURIComponent(TARGET_API);
-                    const response = await fetch(proxyUrl);
-                    
-                    if (!response.ok) throw new Error(`Провалено использование прокси #${i}`);
-
-                    const data = await response.json();
-                    
-                    // Успешное выполнение: скрываем загрузчик и строим интерфейс
-                    loaderElement.style.display = 'none';
-                    buildInterface(data, listContainer);
-                    return; // Прерываем функцию, так как данные получены
-
-                } catch (err) {
-                    console.warn(`Прокси-сервер ${i + 1} вернул ошибку, пробуем следующий...`, err);
-                }
-            }
-
-            // Если выполнение дошло сюда, значит все прокси вернули ошибку
-            loaderElement.style.display = 'none';
-            errorElement.style.display = 'block';
-        }
-
-        function buildInterface(demons, container) {
-            container.innerHTML = ''; // Сброс состояния контента
-
-            demons.forEach(item => {
+            DEMONS_DATA.forEach(item => {
                 const card = document.createElement('div');
                 card.className = "demon-card";
 
                 const isPremiumRank = item.position <= 3;
-                const formattedScore = Number(item.score).toFixed(2);
+                const formattedScore = item.score.toFixed(2);
 
                 card.innerHTML = `
                     <div class="left-side">
                         <span class="position ${isPremiumRank ? 'top-three' : ''}">#${item.position}</span>
                         <div class="info-block">
                             <h2 class="title">${item.name}</h2>
-                            <p class="author">Создатель: <span>${item.publisher ? item.publisher.name : 'Unknown'}</span></p>
+                            <p class="author">Создатель: <span>${item.publisher}</span></p>
                         </div>
                     </div>
                     <div class="right-side">
@@ -256,8 +185,7 @@
             });
         }
 
-        // Автозапуск при инициализации окна браузера
-        window.addEventListener('DOMContentLoaded', loadDemonListData);
+        window.addEventListener('DOMContentLoaded', renderInterface);
     </script>
 </body>
 </html>
